@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<title>Password Converter</title>
+
+	<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+	<link href="../jquery/css/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+	<link href="pwconv.css" rel="stylesheet" />
+
+	<script src="../jquery/jquery-1.7.2.min.js"></script>
+	<script src="../jquery/jquery-ui-1.8.21.custom.min.js"></script>
+	<script src="../jquery/jquery.cookie.js"></script>
+
+	<script src="../bootstrap/js/bootstrap.min.js"></script>
+
+	<script src="../jsSHA/src/sha.js"></script>
+
+	<script src="../zeroclipboard/ZeroClipboard.js"></script>
+
+	<script src="cookie_util.js"></script>
+	<script src="pwconv.js"></script>
+
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="span12">
+				<h1>Password Converter</h1>
+				<form id="pwconv_form" class="well">
+
+					<label>Keyword</label>
+					<input type="text" id="keyword" autocomplete="off" placeholder="domain name…" />
+					<i id="keyword_help" class="icon-question-sign"></i>
+
+					<label>Password: <span id="password_hash_disp"></span></label>
+					<input type="password" id="password" />
+					<i id="password_help" class="icon-question-sign"></i>
+
+					<label>Converted Password</label>
+					<div class="controls">
+						<span class="input-xlarge uneditable-input"><span id="hash"></span>&nbsp;</span>
+					</div>
+
+					<div class="controls">
+						<span id="message"></span>&nbsp;
+					</div>
+
+					<div class="controls">
+						<div class="btn-toolbar" id="copy_button_container">
+							<div class="btn-group">
+								<button type="button" id="copy_button" class="btn btn-primary"><i class="icon-book icon-white"></i> Copy to Clipboard</button>
+								<button type="button" id="auto_button" class="btn btn-primary" data-toggle="button">Auto</button>
+							</div>
+							<div class="btn-group">
+								<button type="button" id="reset_button" class="btn btn-info"><i class="icon-repeat icon-white"></i> Reset</button>
+							</div>
+							<div class="btn-group">
+								<button type="button" id="options_button" class="btn btn-info" data-toggle="collapse" href="#options"><i class="icon-wrench icon-white"></i> Options</button>
+							</div>
+						</div>
+					</div>
+
+					<div id="options" class="collapse">
+						<div class="well-small">
+							<div class="input-item">
+								<label>Pattern: <span id="pattern_disp"></span> <i id="pattern_help" class="icon-question-sign"></i></label>
+								<div id="pattern" class="btn-group" data-toggle="buttons-radio">
+									<button type="button" class="btn btn-info active" value="A">A</button>
+									<button type="button" class="btn btn-info" value="B">B</button>
+									<button type="button" class="btn btn-info" value="C">C</button>
+									<button type="button" class="btn btn-info" value="D">D</button>
+									<button type="button" class="btn btn-info" value="E">E</button>
+								</div>
+							</div>
+							<div class="input-item">
+								<label>Letter <i id="letter_help" class="icon-question-sign"></i></label>
+								<div id="letter" class="btn-group" data-toggle="buttons-radio">
+									<button type="button" class="btn btn-info active" value="both">Both</button>
+									<button type="button" class="btn btn-info" value="upper">Upper</button>
+									<button type="button" class="btn btn-info" value="lower">Lower</button>
+								</div>
+							</div>
+							<div class="input-item">
+								<label>Offset: <span id="offset_disp"></span> <i id="offset_help" class="icon-question-sign"></i></label>
+								<div id="offset" class="input-xlarge"></div>
+							</div>
+							<br/>
+							<div class="input-item">
+								<div class="controls">
+									<button type="button" id="open_save_dialog_button" class="btn btn-warning" data-toggle="modal" href="#options_dialog"><i class="icon-hdd icon-white"></i> Save Options...</button>
+									<button type="button" id="open_view_dialog_button" class="btn btn-warning" data-toggle="modal" href="#options_dialog"><i class="icon-list-alt icon-white"></i> View Options...</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal hide fade" id="options_dialog">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+							<h3 class="dialog_title"></h3>
+						</div>
+						<div class="modal-body">
+							<ul class="nav nav-tabs" id="options_dialog_tabs">
+								<li class="active"><a id="options_dialog_list_tab" href="#options_dialog_list" data-toggle="pill">List</a></li>
+								<li><a id="options_dialog_edit_tab" href="#options_dialog_edit" data-toggle="tab">Edit</a></li>
+							</ul>
+							<div class="tab-content">
+								<div class="tab-pane active" id="options_dialog_list">
+									<table class="table">
+										<caption class="dialog_message"></caption>
+										<thead>
+											<tr class="options_rows">
+												<th class="col1">Status</th>
+												<th class="col2">Keyword</th>
+												<th class="col3">Options</th>
+											</tr>
+										</thead>
+									</table>
+									<div id="options_conf_table">
+										<table class="table">
+											<tbody id="options_conf_body">
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div class="tab-pane" id="options_dialog_edit">
+									<textarea id="options_edit_textarea" type="text" rows="5"></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" id="save_button" class="btn btn-primary"><i class="icon-ok icon-white"></i> Save</button>
+							<button type="button" class="btn btn-info" data-dismiss="modal"><i class="icon-remove icon-white"></i> Cancel</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="row">
+			<div class="span12">
+				<footer class="footer pull-right" style="text-align:right">
+					<div>
+						Version: <span id="pwconv_version"></span>
+					</div>
+					<div>
+						Bookmarklet: <a href="#" id="bookmarklet">Password Converter</a>
+					</div>
+					<div>
+						Author: <a href="https://ja.gravatar.com/yf37">Yoshihito Fukuyama</a>
+					</div>
+					<div>
+						Powered by
+						<a href="http://jquery.com/">JQuery 1.7.2</a> |
+						<a href="http://jqueryui.com/">JQuery UI 1.8.21</a> |
+						<a href="https://github.com/carhartl/jquery-cookie">jquery.cookie</a> |
+						<a href="http://twitter.github.com/bootstrap/">Bootstrap 2.0.4</a> |
+						<a href="http://jssha.sourceforge.net/">jsSHA 1.3</a> |
+						<a href="http://code.google.com/p/zeroclipboard/">Zero Clipboard 1.0.7</a>
+					</div>
+				</footer>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+</html>

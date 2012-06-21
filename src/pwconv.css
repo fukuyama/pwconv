@@ -1,0 +1,28 @@
+.hashpass {
+	color: #fff;
+	background-color: #08c;
+}
+
+.input-item {
+	padding-top: 8px;
+}
+
+.scroll-frame {
+    height: 200px;
+    overflow: auto;
+    position: relative;
+}
+
+.options_rows .col1 {
+	width: 20%;
+}
+.options_rows .col2 {
+	width: 40%;
+}
+.options_rows .col3 {
+	width: 40%;
+}
+
+#options_edit_textarea {
+	width: 90%;
+}
