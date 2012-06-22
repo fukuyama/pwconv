@@ -5,20 +5,20 @@
 	<meta charset="utf-8">
 	<title>Password Converter</title>
 
-	<link href="../bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-	<link href="../bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
-	<link href="../jquery/css/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+	<link href="../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+	<link href="../assets/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
+	<link href="../assets/jquery/css/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
 	<link href="pwconv.css" rel="stylesheet" />
 
-	<script src="../jquery/jquery-1.7.2.min.js"></script>
-	<script src="../jquery/jquery-ui-1.8.21.custom.min.js"></script>
-	<script src="../jquery/jquery.cookie.js"></script>
+	<script src="../assets/jquery/jquery-1.7.2.min.js"></script>
+	<script src="../assets/jquery/jquery-ui-1.8.21.custom.min.js"></script>
+	<script src="../assets/jquery/jquery.cookie.js"></script>
 
-	<script src="../bootstrap/js/bootstrap.min.js"></script>
+	<script src="../assets/bootstrap/js/bootstrap.min.js"></script>
 
-	<script src="../jsSHA/src/sha.js"></script>
+	<script src="../assets/jsSHA/src/sha.js"></script>
 
-	<script src="../zeroclipboard/ZeroClipboard.js"></script>
+	<script src="../assets/zeroclipboard/ZeroClipboard.js"></script>
 
 	<script src="cookie_util.js"></script>
 	<script src="pwconv.js"></script>
@@ -32,13 +32,21 @@
 				<h1>Password Converter</h1>
 				<form id="pwconv_form" class="well">
 
-					<label>Keyword</label>
-					<input type="text" id="keyword" autocomplete="off" placeholder="domain name…" />
-					<i id="keyword_help" class="icon-question-sign"></i>
+					<div id="keyword_control_group" class="control-group">
+						<label>Keyword</label>
+						<div class="controls">
+							<input type="text" id="keyword" autocomplete="off" placeholder="domain name…" />
+							<i id="keyword_help" class="icon-question-sign"></i>
+						</div>
+					</div>
 
-					<label>Password: <span id="password_hash_disp"></span></label>
-					<input type="password" id="password" />
-					<i id="password_help" class="icon-question-sign"></i>
+					<div id="password_control_group" class="control-group">
+						<label>Password: <span id="password_hash_disp"></span></label>
+						<div class="controls">
+							<input type="password" id="password" />
+							<i id="password_help" class="icon-question-sign"></i>
+						</div>
+					</div>
 
 					<label>Converted Password</label>
 					<div class="controls">
@@ -103,6 +111,7 @@
 							<h3 class="dialog_title"></h3>
 						</div>
 						<div class="modal-body">
+							<div id="options_alert_container"></div>
 							<ul class="nav nav-tabs" id="options_dialog_tabs">
 								<li class="active"><a id="options_dialog_list_tab" href="#options_dialog_list" data-toggle="pill">List</a></li>
 								<li><a id="options_dialog_edit_tab" href="#options_dialog_edit" data-toggle="tab">Edit</a></li>
@@ -141,17 +150,17 @@
 		</div>
 		<div class="row">
 			<div class="span12">
-				<footer class="footer pull-right" style="text-align:right">
-					<div>
+				<footer class="footer">
+					<p>
 						Version: <span id="pwconv_version"></span>
-					</div>
-					<div>
+					</p>
+					<p>
 						Bookmarklet: <a href="#" id="bookmarklet">Password Converter</a>
-					</div>
-					<div>
+					</p>
+					<p>
 						Author: <a href="https://ja.gravatar.com/yf37">Yoshihito Fukuyama</a>
-					</div>
-					<div>
+					</p>
+					<p>
 						Powered by
 						<a href="http://jquery.com/">JQuery 1.7.2</a> |
 						<a href="http://jqueryui.com/">JQuery UI 1.8.21</a> |
@@ -159,7 +168,7 @@
 						<a href="http://twitter.github.com/bootstrap/">Bootstrap 2.0.4</a> |
 						<a href="http://jssha.sourceforge.net/">jsSHA 1.3</a> |
 						<a href="http://code.google.com/p/zeroclipboard/">Zero Clipboard 1.0.7</a>
-					</div>
+					</p>
 				</footer>
 			</div>
 		</div>

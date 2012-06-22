@@ -26,3 +26,8 @@
 #options_edit_textarea {
 	width: 90%;
 }
+
+.footer  {
+	text-align: right;
+	line-height: 0.7em;
+}

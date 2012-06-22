@@ -1,4 +1,4 @@
-var pwconv_version = '0.3.4'; 
+var pwconv_version = '0.3.5'; 
  
 // ドキュメント読み込み後の処理
 $(document).ready(function(){ 
@@ -12,7 +12,7 @@ $(document).ready(function(){
 	var cookie_util = new CookieUtil('_pwops');
 
 	// クリップボード用
-	ZeroClipboard.setMoviePath('../zeroclipboard/ZeroClipboard.swf');
+	ZeroClipboard.setMoviePath('../assets/zeroclipboard/ZeroClipboard.swf');
 	var clip = new ZeroClipboard.Client();
 
 	// ブックマークレットの作成
@@ -110,6 +110,10 @@ $(document).ready(function(){
 		});
 		return pattern;
 	};
+	// パターンの値を取得
+	var get_pattern_val = function() {
+		return $('#pattern > button[class*="active"]').val();
+	};
 
 	// パターンの更新
 	var refresh_pattern_display = function() {
@@ -193,6 +197,7 @@ $(document).ready(function(){
 	
 	// オプションのロード
 	var load_cookie_options = function() {
+		$('#keyword_control_group').removeClass('success');
 		// keyword に入力された値が Cookie にあれば、オプションを、その値に初期化する。
 		var keyword = $('#keyword').val();
 		if (keyword != '') {
@@ -211,21 +216,37 @@ $(document).ready(function(){
 				cookie_util.save(data);
 			}
 			if (data[keyword]) {
-				var options = data[keyword]; // pattern letter start 'x' end
-				var pattern = {A:'A',B:'B',C:'C',D:'D',E:'E'}[options.charAt(0)];
-				var letter = {b:'both',u:'upper',l:'lower'}[options.charAt(1)];
-				var s = options.substring(2,8).split(/x/);
-				if (pattern && letter && s.length == 2) {
-					var i = parseInt(s[0]);
-					var l = parseInt(s[1]);
-					$('#pattern > button[value*='+pattern+']').button('toggle');
-					$('#letter > button[value*='+letter+']').button('toggle');
+				var op = parse_options(data[keyword]);
+				if (op) {
+					var i = op.offset[0];
+					var l = op.offset[1];
+					$('#pattern > button[value*='+op.pattern+']').button('toggle');
+					$('#letter > button[value*='+op.letter+']').button('toggle');
 					set_offset(i,l);
 					set_offset_display(i,l);
 					set_hashpass(i,l);
+					$('#keyword_control_group').addClass('success');
 				}
 			}
 		}
+	};
+	
+	// オプション文字列からオプション情報を作成
+	var parse_options = function(options) {
+		var pattern = {A:'A',B:'B',C:'C',D:'D',E:'E'}[options.charAt(0)];
+		var letter = {b:'both',u:'upper',l:'lower'}[options.charAt(1)];
+		var s = options.substring(2,8).split(/x/);
+		if (pattern && letter && s.length == 2) {
+			var i = parseInt(s[0]);
+			var l = parseInt(s[1]);
+			return {pattern: pattern, letter: letter, offset: [i,l]};
+		}
+		return false;
+	};
+	
+	// オプション情報からオプション文字列を作成
+	var create_options_string = function(pattern,letter,offset) {
+		return pattern + letter.charAt(0) + offset.join('x');
 	};
 
 	// キーワード変更ハンドラ
@@ -300,7 +321,7 @@ $(document).ready(function(){
 			tr.append('<td class="col1"><button type="button" class="btn btn-mini disabled">Update</button></td>');
 			break;
 		}
-		tr.append('<td class="col2">'+k+'</td>').append('<td class="col2">'+v+'</td>');
+		tr.append('<td class="col2">'+jQuery.trim(k)+'</td>').append('<td class="col2">'+jQuery.trim(v)+'</td>');
 		return tr;
 	};
 
@@ -313,15 +334,12 @@ $(document).ready(function(){
 		$('.dialog_message',dialog).text('以下の設定を Cookie に保存します。');
 		$('#options_conf_table').removeClass('scroll-frame');
 		var keyword = $('#keyword').val();
-		var values = $('#offset').slider('values');
-		var pattern = $('#pattern > button[class*="active"]').val();
-		var letter = get_letter();
-		var options = pattern + letter.charAt(0) + [values[0],values[1]].join('x');
+		var options = create_options_string(get_pattern_val(),get_letter(),$('#offset').slider('values'));
 		var conf = $('#options_conf_body').empty();
 		var tr = create_options_conf('New',keyword,options);
 		conf.append(tr);
 	});
-
+	
 	$('#open_view_dialog_button').click(function(){
 		$('#options_dialog_list_tab').tab('show');
 		$('#options_edit_textarea').removeClass('disabled');
@@ -347,10 +365,11 @@ $(document).ready(function(){
 		$('#options_conf_body tr').each(function(){
 			var t = $('td',this);
 			var btn = $('button',t[0]);
-			var k = $(t[1]).text();
-			var v = $(t[2]).text();
+			var k = jQuery.trim($(t[1]).text());
+			var v = jQuery.trim($(t[2]).text());
 			switch(btn.text()){
 			case 'New':
+			case 'Update':
 				data[k] = v;
 				break;
 			case 'Del':
@@ -358,19 +377,21 @@ $(document).ready(function(){
 					delete data[k];
 				}
 				break;
-			case 'Update':
-				data[k] = v;
-				break;
 			}
 		});
 		if (cookie_util.checkLength(data)) {
+			var al = $('<div>').addClass('alert alert-block alert-error fade in')
+				.append('<a class="close" data-dismiss="alert" href="#">&times;</a>')
+				.append('<h4 class="alert-heading">Cookie Size Error!</h4>')
+				.append('<p>保存しようとしている Cookie のサイズが大きすぎます。</p>');
+			$('#options_alert_container').append(al);
 			return false;
 		}
 		cookie_util.save(data);
 		$('#options_dialog').modal('hide');
 		reset_keyword_typeahead();
 		$('#options_dialog_edit_tab').text('Edit');
-		$('#options_edit_textarea').text('');
+		$('#options_edit_textarea').val('');
 	});
 	$('#options_edit_textarea').change(function(e){
 		$('#options_dialog_edit_tab').text('Edit*');
@@ -378,21 +399,21 @@ $(document).ready(function(){
 	$('#options_dialog_tabs li').on('show',function(e){
 		var tab_name = $(e.target).text();
 		switch(tab_name) {
+		case 'Edit*':
 		case 'Edit':
-			var textarea = $('#options_edit_textarea');
-			textarea.text('');
+			var text = '';
 			$('#options_conf_body tr').each(function(){
 				var t = $('td',this);
 				var k = $(t[1]).text();
 				var v = $(t[2]).text();
-				textarea.append(k + ',' + v + '\n');
+				text += k + ',' + v + '\n';
 			});
+			$('#options_edit_textarea').val(text);
 			break;
 		case 'List':
 			if ($('#options_dialog_edit_tab').text() == 'Edit*') {
-				var textarea = $('#options_edit_textarea');
 				var conf = $('#options_conf_body').empty();
-				$(textarea.val().split('\n')).each(function(i,line){
+				$($('#options_edit_textarea').val().split('\n')).each(function(i,line){
 					var cols = line.split(/,/);
 					if (cols.length == 2) {
 						var tr = create_options_conf('Update',cols[0],cols[1]);
