@@ -33,7 +33,7 @@ CookieUtil.prototype = {
 		data[key] = val;
 		this.save(data);
 	},
-	delete: function(key) {
+	remove: function(key) {
 		var data = this.load();
 		delete data[key];
 		this.save(data);

@@ -1,4 +1,4 @@
-var pwconv_version = '0.3.5'; 
+var pwconv_version = '0.3.6'; 
  
 // ドキュメント読み込み後の処理
 $(document).ready(function(){ 
