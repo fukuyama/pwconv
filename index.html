@@ -5,6 +5,9 @@
 	<meta charset="utf-8">
 	<title>Password Converter</title>
 
+	<link rel="shortcut icon" href="img/favicon.ico" type="image/vnd.microsoft.icon" />
+	<link rel="icon" href="img/favicon.ico" type="image/vnd.microsoft.icon" />
+
 	<link href="../assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="../assets/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet" />
 	<link href="../assets/jquery/css/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
@@ -48,9 +51,13 @@
 						</div>
 					</div>
 
-					<label>Converted Password</label>
-					<div class="controls">
-						<span class="input-xlarge uneditable-input"><span id="hash"></span>&nbsp;</span>
+					<div class="control-group">
+						<label>Converted Password</label>
+						<div class="controls">
+							<div class="input-append">
+								<span class="input-xlarge uneditable-input"><span id="hash"></span>&nbsp;</span><button type="button" id="hash_show_button" class="btn">Show</button>
+							</div>
+						</div>
 					</div>
 
 					<div class="controls">
@@ -118,7 +125,7 @@
 							</ul>
 							<div class="tab-content">
 								<div class="tab-pane active" id="options_dialog_list">
-									<table class="table">
+									<table class="table table-condensed">
 										<caption class="dialog_message"></caption>
 										<thead>
 											<tr class="options_rows">
@@ -129,7 +136,7 @@
 										</thead>
 									</table>
 									<div id="options_conf_table">
-										<table class="table">
+										<table class="table table-condensed">
 											<tbody id="options_conf_body">
 											</tbody>
 										</table>
@@ -173,8 +180,10 @@
 			</div>
 		</div>
 	</div>
-	<a href="https://github.com/fukuyama/pwconv"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
-
+	<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" usemap="#fork_me_on_github">
+	<map name="fork_me_on_github">
+		<area shape="poly" coords="15,0,149,134,149,89,60,0" href="https://github.com/fukuyama/pwconv" alt="Fork me on GitHub">
+	</map>
 </body>
 
 </html>

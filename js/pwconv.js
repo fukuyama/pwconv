@@ -1,9 +1,11 @@
-var pwconv_version = '0.3.6'; 
- 
+var pwconv_version = '0.3.7';
+
 // ドキュメント読み込み後の処理
 $(document).ready(function(){ 
-	 
-// 初期化 ---------------------------- 
+
+	var hashpass = '';
+
+// 初期化 ----------------------------
 
 	// バージョン情報
 	$('#pwconv_version').text(pwconv_version);
@@ -17,53 +19,66 @@ $(document).ready(function(){
 
 	// ブックマークレットの作成
 	$('#bookmarklet').attr('href','javascript:(function(){window.open(\'' + document.location.protocol + '//' + document.location.host + document.location.pathname + '?k=\'+document.location.hostname)})();');
- 	
-// ファンクション ---------------------------- 
+
+// ファンクション ----------------------------
 
 	// メッセージ表示用
 	var show_message = function(msg) {
 		$('#message').text(msg).show().fadeOut(3000);
 	};
 
+	// ハッシュパスワードの作成
+	var create_hashpass = function(key,pass,pattern,letter) {
+		if (key == '' || pass == '' || pattern == '' || letter == '') {
+			return '';
+		}
+		var text = key + pass + pattern;
+		var hash = new jsSHA(text, 'ASCII').getHash('SHA-1', 'B64');
+		hash = hash.replace(/\+|\//g,pattern.charAt(0));
+		switch (letter) {
+		case 'upper':
+			hash = hash.toUpperCase();
+			break;
+		case 'lower':
+			hash = hash.toLowerCase();
+			break;
+		}
+		return hash;
+	};
 	// ハッシュパスワードの生成
 	var generate_hashpass = function() {
 		var key = $('#keyword').val();
 		var pass = $('#password').val();
 		var pattern = get_pattern();
 		var letter = get_letter();
-		if (key == '' || pass == '' || pattern == '' || letter == '') {
+		hashpass = create_hashpass(key,pass,pattern,letter);
+		if (hashpass == '') {
 			reset_hash_text();
 		} else {
-			var text = key + pass + pattern;
-			var hash = new jsSHA(text, 'ASCII').getHash('SHA-1', 'B64');
-			hash = hash.replace(/\+|\//g,pattern.charAt(0))
-			switch (letter) {
-			case 'upper':
-				hash = hash.toUpperCase();
-				break;
-			case 'lower':
-				hash = hash.toLowerCase();
-				break;
-			}
-			$('#hash').text(hash);
-			var values = $('#offset').slider('values');
-			set_hashpass(values[0],values[1]);
+			refresh_hashpass();
 		}
 	};
-
 	// ハッシュパスワードの設定
 	var set_hashpass = function(i,l) {
-		var hashpass = $('#hash').text();
-		$('#hash').empty()
-			.append(hashpass.substring(0,i))
-			.append('<span class="hashpass">' + hashpass.substring(i,l) + '</span>')
-			.append(hashpass.substring(l,30));
 		clip.setText(hashpass.substring(i,l));
+		var h = hashpass;
+		if($('#hash_show_button').text() == 'Show'){
+			h = h.replace(/./g,'*');
+		}
+		$('#hash').empty()
+			.append(h.substring(0,i))
+			.append('<span class="hashpass">' + h.substring(i,l) + '</span>')
+			.append(h.substring(l,30));
 		var auto = $('#auto_button').hasClass('active');
 		if (auto) {
 			// Auto は未実装
 		}
 	};
+	// ハッシュパスワードの更新
+	var refresh_hashpass = function() {
+		var values = $('#offset').slider('values');
+		set_hashpass(values[0],values[1]);
+	}
 
 	// オフセットの設定
 	var set_offset = function(i,l) {
@@ -181,6 +196,7 @@ $(document).ready(function(){
 	// ハッシュパスワードのリセット
 	var reset_hash_text = function() {
 		$('#hash').empty();
+		hashpass = '';
 	};
 
 	// キーワード typeahead のリセット
@@ -230,7 +246,7 @@ $(document).ready(function(){
 			}
 		}
 	};
-	
+
 	// オプション文字列からオプション情報を作成
 	var parse_options = function(options) {
 		var pattern = {A:'A',B:'B',C:'C',D:'D',E:'E'}[options.charAt(0)];
@@ -260,8 +276,7 @@ $(document).ready(function(){
 		generate_hashpass();
 	};
 
- 
-// ヘルプテキスト ---------------------------- 
+// ヘルプテキスト ----------------------------
 	$('#keyword_help').popover({
 		title: 'Keyword Help',
 		content: 'サイト固有のパスワードを生成するためのキーワード。通常は対象サイトのドメイン名を入力してください。'
@@ -282,8 +297,8 @@ $(document).ready(function(){
 		title: 'Letter Help',
 		content: '使用するパスワード文字の選択。生成されたパスワードを、大文字のみや小文字のみにする場合に選択する。'
 	});
- 
-// イベント設定 ------------------------------------ 
+
+// イベント設定 ------------------------------------
 	$('#keyword').change(keyword_change_handler);
 	$('#keyword').keyup(keyword_change_handler);
 	$('#password').keyup(function() {
@@ -302,8 +317,19 @@ $(document).ready(function(){
 		}
 	});
 	$('#reset_button').click(reset_form);
- 
-// オプション関連イベント ---------------------------- 
+	$('#hash_show_button').click(function(){
+		switch($(this).text()){
+		case 'Show':
+			$(this).text('Hide');
+			break;
+		case 'Hide':
+			$(this).text('Show');
+			break;
+		}
+		refresh_hashpass();
+	});
+
+// オプション関連イベント ----------------------------
 	$('#options').
 	on('show',function(){$('#options_button').addClass('active');}).
 	on('hide',function(){$('#options_button').removeClass('active');});
@@ -339,7 +365,7 @@ $(document).ready(function(){
 		var tr = create_options_conf('New',keyword,options);
 		conf.append(tr);
 	});
-	
+
 	$('#open_view_dialog_button').click(function(){
 		$('#options_dialog_list_tab').tab('show');
 		$('#options_edit_textarea').removeClass('disabled');
@@ -424,8 +450,8 @@ $(document).ready(function(){
 			break;
 		}
 	});
- 
-// クリップボード関連イベント ---------------------------- 
+
+// クリップボード関連イベント ----------------------------
 	clip.addEventListener('complete', function (client, text) {
 		if (text != '') {
 			show_message('クリップボードにコピーしました。');
@@ -441,9 +467,7 @@ $(document).ready(function(){
 	$(window).resize(function(){
 		clip.reposition();
 	});
- 
-// フォームをリセット（初期化）---------------------------- 
+
+// フォームをリセット（初期化）----------------------------
 	reset_form();
-  
-}); 
- 
+});
