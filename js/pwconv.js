@@ -58,6 +58,7 @@ $(document).ready(function(){
 			refresh_hashpass();
 		}
 	};
+
 	// ハッシュパスワードの設定
 	var set_hashpass = function(i,l) {
 		clip.setText(hashpass.substring(i,l));
