@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<title>Test</title>
+	<script>
+var bookmarklet = function(){
+// ---
+(function(d,j,b,s){
+	var m = d.createElement('div');
+	m.id = '_bmldlg';
+	var e = d.createElement('div');
+	m.appendChild(e);
+	e.id = '_bmldlgbk';
+	e.innerHTML = 'Now Loading...';
+	var c = e.style;
+	c.position = 'fixed';
+	c.top = c.left = 0;
+	c.width = c.height = '100%';
+	c.opacity = 0.5;
+	c.filter = 'alpha(opacity=50)';
+	c.backgroundColor = '#000';
+	c.color = '#fff';
+	d.body.appendChild(m);
+	function r(){setTimeout(function(){(jQuery != undefined)?b(jQuery):r()},99)}
+	(j)?b(jQuery):d.body.appendChild(d.createElement('script')).src='http://code.jquery.com/jquery-1.7.2.min.js';
+	r()})(document,this.jQuery,function($){
+		var f = $('#_bmldlgbk');
+		if(!f.data('load')){
+			f.data('load',true);
+			f.empty();
+			var h = 'http://fukuyama.github.com/';
+			$([h+'assets/jsSHA/src/sha.js',h+'pwconv/js/bookmarklet.js']).each(function(){
+				$('<script>').attr('src',this).appendTo('body')
+			});
+		}
+	})
+// ---
+;
+};
+function test1(){
+	console.log(document.cookie);
+}
+function test2(){
+	var t = new Date();
+	t.setDate(t.getDate() + 999);
+	document.cookie = 'test1=val2; expires=' + t.toUTCString();
+}
+function test3(){
+	var d = document;
+	var e = d.createElement('div');
+	e.id = '_bmldlgbk';
+	e.innerHTML = 'Now Loading...';
+	var c = e.style;
+	c.position = 'fixed';
+	c.top = 0;
+	c.left = 0;
+	c.width = '100%';
+	c.height = '100%';
+	c.opacity = 0.5;
+	c.filter = 'alpha(opacity=50)';
+	c.backgroundColor = '#000';
+	c.color = '#fff';
+	d.body.appendChild(e);
+}
+	</script>
+
+</head>
+
+<body>
+test
+<button id="test" onclick="bookmarklet()">OK</button>
+<input type="password" />
+<input type="password" />
+
+
+<button id="t1" onclick="test1()">T1</button>
+<button id="t2" onclick="test2()">T2</button>
+<button id="t3" onclick="test3()">T3</button>
+
+
+</body>
+
+</html>
