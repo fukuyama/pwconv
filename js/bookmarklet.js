@@ -1,10 +1,8 @@
 (function(){
 
-console.log('load');
-
 // パターンの取得
 var get_pattern = function(pass,pattern) {
-	var hash = new jsSHA(pass, 'ASCII').getHash('B64');;
+	var hash = new jsSHA(pass, 'ASCII').getHash('B64');
 	if (hash != '') {
 		switch(pattern) {
 		case 'A': pattern = hash.substring(0, 5); break;
