@@ -2,13 +2,27 @@
 
 console.log('load');
 
+// パターンの取得
+var get_pattern = function(pass,pattern) {
+	var hash = new jsSHA(pass, 'ASCII').getHash('B64');;
+	if (hash != '') {
+		switch(pattern) {
+		case 'A': pattern = hash.substring(0, 5); break;
+		case 'B': pattern = hash.substring(5, 10); break;
+		case 'C': pattern = hash.substring(10,15); break;
+		case 'D': pattern = hash.substring(15,20); break;
+		case 'E': pattern = hash.substring(20,25); break;
+		}
+	}
+	return pattern;
+};
 // ハッシュパスワードの作成
 var create_hash_password = function(key,pass,pattern,letter,offset) {
 	if (key == '' || pass == '' || pattern == '' || letter == '') {
 		return '';
 	}
-	var text = key + pass + pattern;
-	var hash = new jsSHA(text, 'ASCII').getHash('SHA-1', 'B64');
+	var text = key + pass + get_pattern(pass,pattern);
+	var hash = new jsSHA(text, 'ASCII').getHash('B64');
 	hash = hash.replace(/\+|\//g,pattern.charAt(0));
 	switch (letter) {
 	case 'upper':
@@ -49,15 +63,14 @@ var form = $('<form>')
 .append(password)
 .append($('<br/>'))
 .append($('<button type="button">').text('OK').click(function(){
-	$('input[type=password][pwcvat!=_pas]').val(
-		create_hash_password(
-			keyword.val(),
-			password.val(),
-			pattern.val(),
-			letter.val(),
-			[offset1.val(),offset2.val()]
-		)
+	var hash = create_hash_password(
+		keyword.val(),
+		password.val(),
+		pattern.val(),
+		letter.val(),
+		[offset1.val(),offset2.val()]
 	);
+	$('input[type=password][pwcvat!=_pas]').val(hash);
 	$('#_bmldlg').remove();
 }))
 .append($('<button type="button">').text('CANCEL').click(function(){
