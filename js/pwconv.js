@@ -630,7 +630,7 @@ $(document).ready(function () {
 				break;
 			}
 		});
-		if (data_storage.name === 'cookie' || data_storage.checkLength(data)) {
+		if (data_storage.name === 'cookie' && data_storage.checkLength(data)) {
 			al = $('<div>').addClass('alert alert-block alert-error fade in').
 				append('<a class="close" data-dismiss="alert" href="#">&times;</a>').
 				append('<h4 class="alert-heading">Storage Size Error!</h4>').
