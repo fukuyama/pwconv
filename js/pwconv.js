@@ -1,7 +1,7 @@
 /*jslint indent: 4, maxerr: 50, browser: true, windows: true, regexp: true, unparam: true */
 /*global $, jQuery, dataStorage, ZeroClipboard, jsSHA, dataStorageMulti */
 
-var pwconv_version = '0.3.9',
+var pwconv_version = '0.3.10',
 	JsSHA = jsSHA;
 
 // ドキュメント読み込み後の処理
@@ -21,7 +21,12 @@ $(document).ready(function () {
 		reset_form,
 		reset_keyword_typeahead,
 		keyword_change_handler,
-		create_options_conf;
+		password_change_handler,
+		create_options_conf,
+		create_options_handler,
+		create_options_list_table,
+		append_options_conf,
+		init_options_dialog;
 
 // オプションコントロール
 	option = (function () {
@@ -128,7 +133,7 @@ $(document).ready(function () {
 				reset: function () {
 					$('#pattern').button('reset');
 					// リセットするとイベントも消されるから再設定
-					$('#pattern > button').click(function () {
+					$('#pattern > button').click(function (e) {
 						$(this).button('toggle');
 						controls.pattern.display();
 						that.refresh_display();
@@ -327,7 +332,7 @@ $(document).ready(function () {
 					$('#hash').empty();
 					return;
 				}
-				if (typeof i === 'undefined' && typeof l === 'undefined') {
+				if (i === undefined && l === undefined) {
 					values = $('#offset').slider('values');
 					i = values[0];
 					l = values[1];
@@ -391,19 +396,37 @@ $(document).ready(function () {
 			source.push(k);
 		});
 		$('#keyword').typeahead({
-			source: source
+			source: source,
+			updater: function (e) {
+				$('#keyword').val(e);
+				keyword_change_handler();
+				return e;
+			}
 		});
 	};
 
 	// キーワード変更ハンドラ
-	keyword_change_handler = function () {
-		if ($(this).val() === '') {
+	keyword_change_handler = function (e) {
+		if ($('#keyword').val() === '') {
 			$('#open_save_dialog_button').attr('disabled', 'true');
 		} else {
 			$('#open_save_dialog_button').removeAttr('disabled');
 		}
 		option.load();
 		option.reset();
+		hashpass.generate();
+	};
+
+	// パスワード変更ハンドラ
+	password_change_handler = function () {
+		// パスワードのハッシュを取得
+		var hash = '',
+			text = $('#password').val();
+		if (text !== '') {
+			hash = get_hash(text);
+		}
+		$('#password_hash_disp').text(hash);
+		option.controls.pattern.display();
 		hashpass.generate();
 	};
 
@@ -457,19 +480,12 @@ $(document).ready(function () {
 	});
 
 // イベント設定
-	$('#keyword').change(keyword_change_handler);
+	//$('#keyword').change(keyword_change_handler); // updater で処理
 	$('#keyword').keyup(keyword_change_handler);
-	$('#password').keyup(function () {
-		// パスワードのハッシュを取得
-		var hash = '',
-			text = $('#password').val();
-		if (text !== '') {
-			hash = get_hash(text);
-		}
-		$('#password_hash_disp').text(hash);
-		option.controls.pattern.display();
-		hashpass.generate();
-	});
+
+	$('#password').change(password_change_handler);
+	$('#password').keyup(password_change_handler);
+
 	$('#offset').slider({
 		range: true,
 		min: 0,
@@ -495,25 +511,20 @@ $(document).ready(function () {
 	});
 
 // オプション関連イベント
-	$('#options').
-		on('show', function () { $('#options_button').addClass('active'); }).
-		on('hide', function () { $('#options_button').removeClass('active'); });
+	$('#options').on('show', function () { $('#options_button').addClass('active'); });
+	$('#options').on('hide', function () { $('#options_button').removeClass('active'); });
 
 	$('#random_options_button').click(option.random);
 	$('#init_options_button').click(option.init);
 
 	$('#secret_key_dialog').on('shown', function () {
 		var o = secret_key_storage.load();
-		switch ($('#secret_key_hash_show_button').text()) {
-		case 'Show':
-			$('#secret_key_pass').val(o.value);
-			$('#secret_key_pass').focus();
-			break;
-		case 'Hide':
-			$('#secret_key').val(o.value);
-			$('#secret_key').focus();
-			break;
-		}
+		$('#secret_key_pass').val(o.value);
+		$('#secret_key').val(o.value);
+		$('#secret_key_hash_show_button').text('Show');
+		$('#secret_key').hide();
+		$('#secret_key_pass').show();
+		$('#secret_key_pass').focus();
 	});
 	$('#secret_key_ok_button').click(function () {
 		var o = secret_key_storage.load();
@@ -527,8 +538,19 @@ $(document).ready(function () {
 		}
 		secret_key_storage.save(o);
 		$('#secret_key_dialog').modal('hide');
+		$('#secret_key_pass').val('');
 		$('#secret_key').val('');
+		$('#secret_key_hash_show_button').text('Show');
+		$('#secret_key').hide();
+		$('#secret_key_pass').show();
 		hashpass.generate();
+	});
+	$('#secret_key_cancel_button').click(function () {
+		$('#secret_key_pass').val('');
+		$('#secret_key').val('');
+		$('#secret_key_hash_show_button').text('Show');
+		$('#secret_key').hide();
+		$('#secret_key_pass').show();
 	});
 	$('#secret_key_hash_show_button').click(function () {
 		switch ($(this).text()) {
@@ -560,56 +582,136 @@ $(document).ready(function () {
 
 	// オプション確認の表示データ作成
 	create_options_conf = function (button, k, v) {
-		var tr = $('<tr>').addClass('options_rows');
+		var tr = $('<tr>').addClass('options_rows'),
+			search = $('#options_search_input').val();
 		switch (button) {
 		case 'New':
 			tr.append('<td class="col1"><button type="button" class="btn btn-mini disabled">New</button></td>');
 			break;
-		case 'Del':
-			tr.append('<td class="col1"><button type="button" class="btn btn-mini" data-toggle="button">Del</button></td>');
+		case 'ok':
+			tr.append('<td class="col1"><button type="button" class="btn btn-mini option-del" data-toggle="button">--</button></td>');
 			break;
 		case 'Update':
 			tr.append('<td class="col1"><button type="button" class="btn btn-mini disabled">Update</button></td>');
 			break;
+		case 'Del':
+			tr.append('<td class="col1"><button type="button" class="btn btn-mini option-del active" data-toggle="button" >Del</button></td>');
+			break;
 		}
-		tr.append($('<td class="col2">').text(jQuery.trim(k))).append('<td class="col2">' + jQuery.trim(v) + '</td>');
+		tr.append($('<td class="col2 option-name">').text(jQuery.trim(k))).append($('<td class="col2">').text(jQuery.trim(v)));
+		if (search !== '' && (!k.match(search))) {
+			tr.hide();
+		}
 		return tr;
+	};
+	create_options_handler = function (conf) {
+		$('.option-del', conf).click(function () {
+			var btn = $(this);
+			if (btn.text() === 'Del') {
+				btn.text('--');
+			} else {
+				btn.text('Del');
+			}
+		});
+		$('.option-name', conf).click(function () {
+			window.location = '?k=' + $(this).text();
+		});
+	};
+	create_options_list_table = function () {
+		var data = data_storage.load(), conf, cols, delmap = {};
+		// Del マークされた物を保存
+		$('#options_conf_body tr').each(function () {
+			var t = $('td', this),
+				btn = $('button', t[0]),
+				k = jQuery.trim($(t[1]).text()),
+				v = jQuery.trim($(t[2]).text());
+			if (btn.text() === 'Del') {
+				delmap[k] = v;
+			}
+		});
+		// テーブル削除
+		conf = $('#options_conf_body').empty();
+		// 作り直し
+		if ($('#options_dialog_edit_tab').text() === 'Edit*' || $('#options_edit_textarea').hasClass('disabled')) {
+			$($('#options_edit_textarea').val().split('\n')).each(function (i, line) {
+				cols = line.split(/,/);
+				if (cols.length === 2) {
+					var k, v;
+					k = cols[0];
+					v = cols[1];
+					if (!delmap[k]) {
+						// 入力チェック
+						if (/^[ABCDE][bul][0-9]+x[0-9]+s?$/.test(v)) {
+							append_options_conf(data, conf, k, v);
+						}
+					} else {
+						conf.append(create_options_conf('Del', k, v));
+					}
+				}
+			});
+		} else {
+			$.each(data, function (k, v) {
+				if (!delmap[k]) {
+					conf.append(create_options_conf('ok', k, v));
+				} else {
+					conf.append(create_options_conf('Del', k, v));
+				}
+			});
+		}
+		create_options_handler(conf);
+	};
+
+	append_options_conf = function (data, conf, key, op) {
+		if (data[key]) {
+			if (data[key] === op) {
+				conf.append(create_options_conf('ok', key, op));
+			} else {
+				conf.append(create_options_conf('Update', key, op));
+			}
+		} else {
+			conf.append(create_options_conf('New', key, op));
+		}
+	};
+
+	init_options_dialog = function () {
+		$('#options_conf_body').empty();
+		$('#options_edit_textarea').val('');
+		$('#options_search_input').val('');
+		$('#options_dialog_edit_tab').text('Edit');
+		$('#options_dialog_list_tab').tab('show');
 	};
 
 	$('#open_save_dialog_button').click(function () {
 		var dialog = $('#options_dialog'),
 			keyword = $('#keyword').val(),
 			options = $('#options_disp').text(),
-			conf = $('#options_conf_body').empty();
-		$('#options_dialog_list_tab').tab('show');
+			conf = $('#options_conf_body').empty(),
+			data = data_storage.load();
+		init_options_dialog();
 		$('#options_edit_textarea').addClass('disabled');
 		$('#options_edit_textarea').attr('disabled', 'true');
 		$('.dialog_title', dialog).text('Save Options');
 		$('.dialog_message', dialog).text('以下の設定を ' + data_storage.name + ' に保存します。');
 		$('#options_conf_table').removeClass('scroll-frame');
-		conf.append(create_options_conf('New', keyword, options));
+		$('#options_search_form').hide();
+		append_options_conf(data, conf, keyword, options);
 	});
 
 	$('#open_view_dialog_button').click(function () {
-		var dialog = $('#options_dialog'),
-			conf = $('#options_conf_body').empty(),
-			data = data_storage.load();
-		$('#options_dialog_edit_tab').text('Edit');
-		$('#options_dialog_list_tab').tab('show');
+		var dialog = $('#options_dialog');
+		init_options_dialog();
 		$('#options_edit_textarea').removeClass('disabled');
 		$('#options_edit_textarea').removeAttr('disabled');
 		$('.dialog_title', dialog).text('View Options');
 		$('.dialog_message', dialog).text('以下の設定が ' + data_storage.name + ' に保存されています。');
 		$('#options_conf_table').addClass('scroll-frame');
-		$.each(data, function (k, v) {
-			conf.append(create_options_conf('Del', k, v));
-		});
+		$('#options_search_form').show();
+		create_options_list_table();
 	});
 
-	$('#save_button').click(function () {
-		var data = data_storage.load(),
-			al;
-		if ($('#options_dialog_edit_tab').text() === 'Edit*') {
+	$('#option_save_button').click(function () {
+		var data = data_storage.load();
+		if ($('#options_dialog_edit_tab').text() === 'Edit*' && (!$('#options_edit_textarea').hasClass('disabled'))) {
 			$('#options_dialog_list_tab').tab('show');
 			data = {};
 		}
@@ -619,7 +721,12 @@ $(document).ready(function () {
 				k = jQuery.trim($(t[1]).text()),
 				v = jQuery.trim($(t[2]).text());
 			switch (btn.text()) {
+			case '--':
+				data[k] = v;
+				break;
 			case 'New':
+				data[k] = v;
+				break;
 			case 'Update':
 				data[k] = v;
 				break;
@@ -631,27 +738,31 @@ $(document).ready(function () {
 			}
 		});
 		if (data_storage.name === 'cookie' && data_storage.checkLength(data)) {
-			al = $('<div>').addClass('alert alert-block alert-error fade in').
-				append('<a class="close" data-dismiss="alert" href="#">&times;</a>').
-				append('<h4 class="alert-heading">Storage Size Error!</h4>').
-				append('<p>保存しようとしているデータサイズが大きすぎます。</p>');
+			var al = $('<div>');
+			al.addClass('alert alert-block alert-error fade in');
+			al.append('<a class="close" data-dismiss="alert" href="#">&times;</a>');
+			al.append('<h4 class="alert-heading">Storage Size Error!</h4>');
+			al.append('<p>保存しようとしているデータサイズが大きすぎます。</p>');
 			$('#options_alert_container').append(al);
 			return false;
 		}
 		data_storage.save(data);
 		$('#options_dialog').modal('hide');
 		reset_keyword_typeahead();
-		$('#options_dialog_edit_tab').text('Edit');
-		$('#options_edit_textarea').val('');
+	});
+	$('#options_search_reset').click(function (e) {
+		$('#options_search_input').val('');
+		create_options_list_table();
+	});
+	$('#options_search_input').keyup(function (e) {
+		create_options_list_table();
 	});
 	$('#options_edit_textarea').change(function (e) {
 		$('#options_dialog_edit_tab').text('Edit*');
 	});
 	$('#options_dialog_tabs li').on('show', function (e) {
 		var tab_name = $(e.target).text(),
-			text = '',
-			conf,
-			cols;
+			text = '';
 		switch (tab_name) {
 		case 'Edit*':
 		case 'Edit':
@@ -664,18 +775,7 @@ $(document).ready(function () {
 			$('#options_edit_textarea').val(text);
 			break;
 		case 'List':
-			if ($('#options_dialog_edit_tab').text() === 'Edit*') {
-				conf = $('#options_conf_body').empty();
-				$($('#options_edit_textarea').val().split('\n')).each(function (i, line) {
-					cols = line.split(/,/);
-					if (cols.length === 2) {
-						// 入力チェック
-						if (/^[ABCDE][bul][0-9]+x[0-9]+s?$/.test(cols[1])) {
-							conf.append(create_options_conf('Update', cols[0], cols[1]));
-						}
-					}
-				});
-			}
+			create_options_list_table();
 			break;
 		}
 	});

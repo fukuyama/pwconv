@@ -2,9 +2,19 @@ html {
 	overflow-y: scroll;
 }
 
+#password_hash_disp, #hash {
+	font-family: monospace;
+}
+
 .hashpass {
 	color: #fff;
 	background-color: #08c;
+}
+
+#keyword_help,
+#password_help {
+	margin-top: 9px;
+	vertical-align: top;
 }
 
 /*
@@ -19,6 +29,10 @@ html {
     position: relative;
 }
 
+#options .control-label  {
+	margin-bottom: 5px;
+}
+
 .options_rows .col1 {
 	width: 20%;
 }
@@ -27,6 +41,20 @@ html {
 }
 .options_rows .col3 {
 	width: 40%;
+}
+.option-name {
+	cursor: pointer;
+}
+.options_rows:hover {
+	background-color: #eeeeff;
+}
+
+thead .options_rows:hover {
+	background-color: #ffffff;
+}
+
+#options_conf_table {
+	margin-bottom: 5px;
 }
 
 #options_edit_textarea {

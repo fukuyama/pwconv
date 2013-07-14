@@ -23,7 +23,7 @@
 				<form id="pwconv_form" class="well">
 
 					<div id="keyword_control_group" class="control-group">
-						<label>Keyword</label>
+						<label for="keyword">Keyword</label>
 						<div class="controls">
 							<input type="text" id="keyword" autocomplete="off" placeholder="domain name..." />
 							<i id="keyword_help" class="icon-question-sign"></i>
@@ -31,7 +31,7 @@
 					</div>
 
 					<div id="password_control_group" class="control-group">
-						<label>Password: <span id="password_hash_disp"></span></label>
+						<label for="password">Password: <span id="password_hash_disp"></span></label>
 						<div class="controls">
 							<input type="password" id="password" />
 							<i id="password_help" class="icon-question-sign"></i>
@@ -39,7 +39,7 @@
 					</div>
 
 					<div class="control-group">
-						<label>Converted Password</label>
+						<div class="control-label">Converted Password</div>
 						<div class="controls">
 							<div class="input-append">
 								<span class="input-xlarge uneditable-input"><span id="hash"></span>&nbsp;</span><button type="button" id="hash_show_button" class="btn">Show</button>
@@ -69,36 +69,46 @@
 					<div id="options" class="collapse">
 						<div class="well-small">
 							<div class="control-group">
-								<label>Pattern: <span id="pattern_disp"></span> <i id="pattern_help" class="icon-question-sign"></i></label>
-								<div id="pattern" class="btn-group" data-toggle="buttons-radio">
-									<button type="button" class="btn btn-info active" value="A">A</button>
-									<button type="button" class="btn btn-info" value="B">B</button>
-									<button type="button" class="btn btn-info" value="C">C</button>
-									<button type="button" class="btn btn-info" value="D">D</button>
-									<button type="button" class="btn btn-info" value="E">E</button>
+								<div class="control-label">Pattern: <span id="pattern_disp"></span> <i id="pattern_help" class="icon-question-sign"></i></div>
+								<div class="controls">
+									<div id="pattern" class="btn-group" data-toggle="buttons-radio">
+										<button type="button" class="btn btn-info active" value="A">A</button>
+										<button type="button" class="btn btn-info" value="B">B</button>
+										<button type="button" class="btn btn-info" value="C">C</button>
+										<button type="button" class="btn btn-info" value="D">D</button>
+										<button type="button" class="btn btn-info" value="E">E</button>
+									</div>
 								</div>
 							</div>
 							<div class="control-group">
-								<label>Letter <i id="letter_help" class="icon-question-sign"></i></label>
-								<div id="letter" class="btn-group" data-toggle="buttons-radio">
-									<button type="button" class="btn btn-info active" value="both">Both</button>
-									<button type="button" class="btn btn-info" value="upper">Upper</button>
-									<button type="button" class="btn btn-info" value="lower">Lower</button>
+								<div class="control-label">Letter <i id="letter_help" class="icon-question-sign"></i></div>
+								<div class="controls">
+									<div id="letter" class="btn-group" data-toggle="buttons-radio">
+										<button type="button" class="btn btn-info active" value="both">Both</button>
+										<button type="button" class="btn btn-info" value="upper">Upper</button>
+										<button type="button" class="btn btn-info" value="lower">Lower</button>
+									</div>
 								</div>
 							</div>
 							<div class="control-group">
-								<label>Secret Key: <input id="secret_key_checkbox" type="checkbox" value="on"> <i id="secret_key_help" class="icon-question-sign"></i></label>
-								<button type="button" id="secret_key_button" class="btn btn-info" data-toggle="modal" href="#secret_key_dialog"><i class="icon-lock icon-white"></i> Config Secret Key...</button>
+								<div class="control-label">Secret Key: <input id="secret_key_checkbox" type="checkbox" value="on"> <i id="secret_key_help" class="icon-question-sign"></i></div>
+								<div class="controls">
+									<button type="button" id="secret_key_button" class="btn btn-info" data-toggle="modal" href="#secret_key_dialog"><i class="icon-lock icon-white"></i> Config Secret Key...</button>
+								</div>
 							</div>
 							<div class="control-group">
-								<label>Offset: <span id="offset_disp"></span> <i id="offset_help" class="icon-question-sign"></i></label>
-								<div id="offset" class="input-xlarge"></div>
+								<div class="control-label">Offset: <span id="offset_disp"></span> <i id="offset_help" class="icon-question-sign"></i></div>
+								<div class="controls">
+									<div id="offset" class="input-xlarge"></div>
+								</div>
 							</div>
 							<div class="control-group">
-								<label>Storage: <i id="storage_help" class="icon-question-sign"></i></label>
-								<div id="storage" class="btn-group" data-toggle="buttons-radio">
-									<button type="button" class="btn btn-danger active" value="cookie">Cookie</button>
-									<button type="button" class="btn btn-danger" value="localStorage">localStorage</button>
+								<div class="control-label">Storage: <i id="storage_help" class="icon-question-sign"></i></div>
+								<div class="controls">
+									<div id="storage" class="btn-group" data-toggle="buttons-radio">
+										<button type="button" class="btn btn-danger active" value="cookie">Cookie</button>
+										<button type="button" class="btn btn-danger" value="localStorage">localStorage</button>
+									</div>
 								</div>
 							</div>
 
@@ -130,7 +140,7 @@
 						</div>
 						<div class="modal-footer">
 							<button type="button" id="secret_key_ok_button" class="btn btn-primary"><i class="icon-ok icon-white"></i> OK</button>
-							<button type="button" class="btn btn-info" data-dismiss="modal"><i class="icon-remove icon-white"></i> Cancel</button>
+							<button type="button" id="secret_key_cancel_button" class="btn btn-info" data-dismiss="modal"><i class="icon-remove icon-white"></i> Cancel</button>
 						</div>
 					</div>
 					<div class="modal hide fade" id="options_dialog">
@@ -162,6 +172,12 @@
 											</tbody>
 										</table>
 									</div>
+									<div id="options_search_form" class="pull-right">
+										<div class="input-append">
+											<input id="options_search_input" type="text" class="span2" placeholder="Search" />
+											<button id="options_search_reset" type="button" class="btn"><i class="icon-remove"></i></button>
+										</div>
+									</div>
 								</div>
 								<div class="tab-pane" id="options_dialog_edit">
 									<textarea id="options_edit_textarea" type="text" rows="5"></textarea>
@@ -169,8 +185,8 @@
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" id="save_button" class="btn btn-primary"><i class="icon-ok icon-white"></i> Save</button>
-							<button type="button" class="btn btn-info" data-dismiss="modal"><i class="icon-remove icon-white"></i> Cancel</button>
+							<button type="button" id="option_save_button" class="btn btn-primary"><i class="icon-ok icon-white"></i> Save</button>
+							<button type="button" id="option_cancel_button" class="btn btn-info" data-dismiss="modal"><i class="icon-remove icon-white"></i> Cancel</button>
 						</div>
 					</div>
 				</form>
@@ -190,8 +206,8 @@
 					</p>
 					<p>
 						Powered by
-						<a href="http://jquery.com/">JQuery 1.9.0</a> |
-						<a href="http://jqueryui.com/">JQuery UI 1.10.0</a> |
+						<a href="http://jquery.com/">JQuery 2.0.0</a> |
+						<a href="http://jqueryui.com/">JQuery UI 1.10.2</a> |
 						<a href="https://github.com/carhartl/jquery-cookie">jquery.cookie</a> |
 						<a href="http://twitter.github.com/bootstrap/">Bootstrap 2.2.2</a> |
 						<a href="http://caligatio.github.com/jsSHA/">jsSHA 1.42</a> |
@@ -201,13 +217,14 @@
 			</div>
 		</div>
 	</div>
+
 	<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" usemap="#fork_me_on_github">
 	<map name="fork_me_on_github">
 		<area shape="poly" coords="15,0,149,134,149,89,60,0" href="https://github.com/fukuyama/pwconv" alt="Fork me on GitHub">
 	</map>
 
-	<script src="../assets/jquery/jquery-1.9.0.min.js"></script>
-	<script src="../assets/jquery/jquery-ui-1.10.0.custom.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
 	<script src="../assets/jquery/jquery.cookie.js"></script>
 
 	<script src="../assets/bootstrap/2.2.2/js/bootstrap.min.js"></script>
