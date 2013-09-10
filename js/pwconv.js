@@ -1,8 +1,11 @@
 /*jslint indent: 4, maxerr: 50, browser: true, windows: true, regexp: true, unparam: true */
 /*global $, jQuery, dataStorage, ZeroClipboard, jsSHA, dataStorageMulti */
 
-var pwconv_version = '0.3.10',
-	JsSHA = jsSHA;
+var pwconv_version = '0.3.11';
+
+function escapeRegExp(str) {
+	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+}
 
 // ドキュメント読み込み後の処理
 $(document).ready(function () {
@@ -269,7 +272,7 @@ $(document).ready(function () {
 
 	// ハッシュ取得用
 	get_hash = function (text) {
-		return new JsSHA(text, 'TEXT').getHash('SHA-1', 'B64');
+		return new jsSHA(text, 'TEXT').getHash('SHA-1', 'B64');
 	};
 
 	query_param = (function () {
@@ -277,6 +280,7 @@ $(document).ready(function () {
 			keyword: '',
 			storage: 'auto'
 		};
+		// クエリーパラメーターの解析
 		if (document.location.search && document.location.search.length > 0) {
 			$(document.location.search.split(/\?|\&/)).each(function (i, query) {
 				var data = query.split(/\=/);
@@ -297,6 +301,7 @@ $(document).ready(function () {
 				}
 			});
 		}
+
 		return q;
 	}());
 
@@ -369,7 +374,20 @@ $(document).ready(function () {
 	reset_form = function () {
 		$('#pwconv_form').each(function () { this.reset(); });
 		if (query_param.keyword) {
-			$('#keyword').val(query_param.keyword);
+			var keyword = query_param.keyword,
+				data = data_storage.load();
+			if (!data[keyword]) {
+				// クエリーパラメーターのオプションデータが無い場合。前方一致でマッチする物を keyword にする
+				var keyword_regexp = new RegExp('^' + escapeRegExp(keyword) + '.*');
+				$.each(data, function (k, v) {
+					if (keyword_regexp.test(k)) {
+						keyword = k;
+						return false;
+					}
+					return true;
+				});
+			}
+			$('#keyword').val(keyword);
 		}
 		if ($('#keyword').val() === '') {
 			$('#open_save_dialog_button').attr('disabled', 'true');
