@@ -1,7 +1,7 @@
 /*jslint indent: 4, maxerr: 50, browser: true, windows: true, regexp: true, unparam: true */
 /*global $, jQuery, dataStorage, ZeroClipboard, jsSHA, dataStorageMulti */
 
-var pwconv_version = '0.3.11';
+var pwconv_version = '0.3.12';
 
 function escapeRegExp(str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -12,7 +12,7 @@ $(document).ready(function () {
 	'use strict';
 	// オブジェクト
 	var hashpass,           // ハッシュパスワードの管理オブジェクト
-		clip,               // クリップボード(ZeroClipboard)のオブジェクト
+		clip_text,          // クリップボードにコピーする文字列
 		data_storage,       // オプションを保存するストレージ(key=_pwops)
 		secret_key_storage, // シークレットキーを保存するストレージ(key=_pwskey)
 		option,             // オプション管理オブジェクト
@@ -30,6 +30,8 @@ $(document).ready(function () {
 		create_options_list_table,
 		append_options_conf,
 		init_options_dialog;
+
+	clip_text = '';
 
 // オプションコントロール
 	option = (function () {
@@ -342,7 +344,7 @@ $(document).ready(function () {
 					i = values[0];
 					l = values[1];
 				}
-				clip.setText(h.substring(i, l));
+				clip_text = h.substring(i, l);
 				if ($('#hash_show_button').text() === 'Show') {
 					h = h.replace(/./g, '*');
 				}
@@ -799,22 +801,20 @@ $(document).ready(function () {
 	});
 
 // クリップボード関連イベント
-	ZeroClipboard.setMoviePath('../assets/zeroclipboard/ZeroClipboard.swf');
-	clip = new ZeroClipboard.Client();
-	clip.addEventListener('complete', function (client, text) {
-		if (text !== '') {
+	function copy_to_clipboard(txt) {
+		var fn = function(e) {
+			e.clipboardData.setData('text/plain', txt);
+			e.preventDefault();
+		};
+		document.addEventListener('copy', fn);
+		document.execCommand('copy');
+		document.removeEventListener('copy', fn);
+	}
+	$('#copy_button').click(function (e) {
+		if (clip_text !== '') {
+			copy_to_clipboard(clip_text);
 			show_message('クリップボードにコピーしました。');
 		}
-	});
-	clip.addEventListener('mouseOver', function (client, text) {
-		clip.reposition();
-	});
-	clip.glue('copy_button', 'copy_button_container');
-	$('#copy_button').mouseover(function () {
-		clip.reposition();
-	});
-	$(window).resize(function () {
-		clip.reposition();
 	});
 
 // バージョン情報
@@ -829,3 +829,4 @@ $(document).ready(function () {
 // フォームをリセット（初期化）
 	reset_form();
 });
+
