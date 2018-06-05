@@ -1,7 +1,7 @@
 /*jslint indent: 4, maxerr: 50, browser: true, windows: true, regexp: true, unparam: true */
 /*global $, jQuery, dataStorage, ZeroClipboard, jsSHA, dataStorageMulti */
 
-var pwconv_version = '0.3.12';
+var pwconv_version = '0.3.13';
 
 function escapeRegExp(str) {
 	return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
@@ -352,10 +352,11 @@ $(document).ready(function () {
 					.append(h.substring(0, i))
 					.append('<span class="hashpass">' + h.substring(i, l) + '</span>')
 					.append(h.substring(l, 30));
-				// TODO:: Auto は未実装
-				//var auto = $('#auto_button').hasClass('active');
-				//if (auto) {
-				//}
+				// TODO:: Auto 実装(仮)
+				var auto = $('#auto_button').hasClass('active');
+				if (auto) {
+					copy_to_clipboard(clip_text);
+				}
 			},
 			// ハッシュパスワードの生成
 			generate: function () {
@@ -801,19 +802,16 @@ $(document).ready(function () {
 	});
 
 // クリップボード関連イベント
-	function copy_to_clipboard(txt) {
-		var fn = function(e) {
-			e.clipboardData.setData('text/plain', txt);
-			e.preventDefault();
-		};
-		document.addEventListener('copy', fn);
-		document.execCommand('copy');
-		document.removeEventListener('copy', fn);
+	var copy_to_clipboard = function(txt) {
+		navigator.clipboard.writeText(txt)
+			.then(
+				function () {show_message('クリップボードにコピーしました。' + txt);},
+				function () {show_message('error');}
+			);
 	}
 	$('#copy_button').click(function (e) {
 		if (clip_text !== '') {
-			copy_to_clipboard(clip_text);
-			show_message('クリップボードにコピーしました。');
+			copy_to_clipboard(clip_text)
 		}
 	});
 
